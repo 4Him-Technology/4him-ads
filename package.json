@@ -1,0 +1,33 @@
+{
+  "name": "4him-ads",
+  "private": true,
+  "version": "0.1.0",
+  "description": "4him Ads — plataforma SaaS de gestão de tráfego pago multi-plataforma (4Him Technology)",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "dev:web": "npm run dev --workspace @4him/web",
+    "dev:api": "npm run dev --workspace @4him/api",
+    "db:migrate": "node scripts/migrate.mjs",
+    "db:status": "node scripts/migrate.mjs --dry",
+    "db:check": "node scripts/db-check.mjs",
+    "bootstrap": "node scripts/bootstrap.mjs",
+    "unlock": "node scripts/unlock-login.mjs"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.7",
+    "postgres": "^3.4.5",
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "npm@11.12.1"
+}
