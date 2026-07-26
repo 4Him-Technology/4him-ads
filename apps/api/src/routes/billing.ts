@@ -225,4 +225,53 @@ export async function billingRoutes(app: FastifyInstance) {
     if (error) return reply.code(500).send({ error: "erro ao listar faturas" });
     return data;
   });
+
+  // ============================================================
+  // Panorama financeiro
+  // ============================================================
+
+  app.get("/billing/summary", { preHandler: [requireAuth, requireStaff] }, async (request, reply) => {
+    const { data, error } = await request.db!.rpc("resumo_financeiro");
+
+    if (error) {
+      request.log.error({ err: error.message }, "falha no resumo financeiro");
+      return reply.code(500).send({ error: "erro ao carregar resumo" });
+    }
+    return data;
+  });
+
+  /**
+   * GET /subscriptions/:id/variable — prévia da parte variável do período.
+   *
+   * Apenas calcula e mostra a conta aberta; não gera cobrança. A fatura só
+   * sai depois que a equipe confere, para nunca faturar em cima de dado
+   * errado (métrica não sincronizada, rastreamento quebrado etc.).
+   */
+  app.get<{ Params: { id: string }; Querystring: { inicio?: string; fim?: string } }>(
+    "/subscriptions/:id/variable",
+    { preHandler: [requireAuth, requireStaff] },
+    async (request, reply) => {
+      const hoje = new Date();
+      const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+      const ultimoDia = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+
+      const inicio = request.query.inicio ?? primeiroDia.toISOString().slice(0, 10);
+      const fim = request.query.fim ?? ultimoDia.toISOString().slice(0, 10);
+
+      const { data, error } = await request.db!.rpc("calcular_variavel", {
+        p_subscription: request.params.id,
+        p_inicio: inicio,
+        p_fim: fim,
+      });
+
+      if (error) {
+        request.log.error({ err: error.message }, "falha ao apurar parte variável");
+        return reply.code(500).send({ error: "erro ao apurar" });
+      }
+
+      const linha = Array.isArray(data) ? data[0] : data;
+      // Plano sem parte variável devolve vazio — a interface trata como "só fixo".
+      return linha ?? null;
+    },
+  );
 }

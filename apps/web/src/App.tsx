@@ -10,6 +10,8 @@ import Alertas from "@/pages/Alertas";
 import Portal from "@/pages/Portal";
 import Aprovacoes from "@/pages/Aprovacoes";
 import Clientes from "@/pages/Clientes";
+import Cobranca from "@/pages/Cobranca";
+import Planos from "@/pages/Planos";
 import Conexoes from "@/pages/Conexoes";
 import Usuarios from "@/pages/Usuarios";
 import Configuracoes from "@/pages/Configuracoes";
@@ -35,6 +37,8 @@ export default function App() {
             <Route path="tarefas" element={<Tarefas />} />
             <Route path="alertas" element={<Alertas />} />
             <Route path="clientes" element={<Clientes />} />
+            <Route path="cobranca" element={<Cobranca />} />
+            <Route path="planos" element={<Planos />} />
             <Route path="conexoes" element={<Conexoes />} />
             <Route path="usuarios" element={<Usuarios />} />
             <Route path="configuracoes" element={<Configuracoes />} />

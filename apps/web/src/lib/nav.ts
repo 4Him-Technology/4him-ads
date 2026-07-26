@@ -2,6 +2,7 @@ import {
   BadgeCheck,
   Bell,
   Building2,
+  CircleDollarSign,
   Eye,
   Handshake,
   Images,
@@ -11,6 +12,7 @@ import {
   Plug,
   Settings,
   Settings2,
+  Tags,
   Target,
   UserCog,
   type LucideIcon,
@@ -60,11 +62,20 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    label: "Financeiro",
+    icon: CircleDollarSign,
+    staffOnly: true,
+    items: [
+      { path: "/cobranca", label: "Cobrança", icon: CircleDollarSign },
+      { path: "/planos", label: "Planos", icon: Tags },
+    ],
+  },
+  {
     label: "Administração",
     icon: Settings2,
     staffOnly: true,
     items: [
-      { path: "/clientes", label: "Clientes", icon: Building2, soon: true },
+      { path: "/clientes", label: "Clientes", icon: Building2 },
       { path: "/conexoes", label: "Conexões", icon: Plug, soon: true },
       { path: "/usuarios", label: "Usuários", icon: UserCog, soon: true },
       { path: "/configuracoes", label: "Configurações", icon: Settings, soon: true },

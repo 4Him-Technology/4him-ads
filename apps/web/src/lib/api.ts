@@ -222,3 +222,131 @@ export function inviteClientUser(
     body: JSON.stringify(dados),
   });
 }
+
+// ============================================================
+// Cobrança
+// ============================================================
+
+export type BillingCycle = "monthly" | "quarterly" | "yearly";
+export type BillingMetric = "ad_spend" | "revenue" | "conversions" | "leads";
+export type SubscriptionStatus =
+  | "trialing"
+  | "active"
+  | "past_due"
+  | "suspended"
+  | "cancelled";
+export type InvoiceStatus = "pending" | "paid" | "overdue" | "refunded" | "cancelled";
+
+export interface Plan {
+  id: string;
+  name: string;
+  description: string | null;
+  amount: number;
+  cycle: BillingCycle;
+  variable_metric: BillingMetric | null;
+  variable_threshold: number | null;
+  variable_pct: number | null;
+  variable_cap: number | null;
+  variable_grace_months: number;
+  features: string[];
+  is_active: boolean;
+}
+
+export interface Subscription {
+  id: string;
+  client_id: string;
+  plan_id: string | null;
+  status: SubscriptionStatus;
+  amount: number;
+  cycle: BillingCycle;
+  started_at: string;
+  next_due_date: string | null;
+  asaas_subscription_id: string | null;
+  clients: { id: string; name: string } | null;
+  plans: { id: string; name: string } | null;
+}
+
+export interface Invoice {
+  id: string;
+  client_id: string;
+  description: string | null;
+  amount: number;
+  due_date: string;
+  paid_at: string | null;
+  status: InvoiceStatus;
+  method: string | null;
+  invoice_url: string | null;
+  clients: { id: string; name: string } | null;
+}
+
+export interface BillingSummary {
+  mrr: number;
+  assinaturas_ativas: number;
+  em_carencia: number;
+  inadimplentes: number;
+  a_receber: number;
+  vencidas: number;
+  recebido_mes: number;
+}
+
+/** Prévia da parte variável — só cálculo, não gera cobrança. */
+export interface VariablePreview {
+  metric: BillingMetric;
+  metric_value: number;
+  threshold: number;
+  pct: number;
+  excedente: number;
+  amount: number;
+  em_carencia: boolean;
+  carencia_ate: string;
+}
+
+export function fetchPlans(): Promise<Plan[]> {
+  return request<Plan[]>("/plans");
+}
+
+export function createPlan(dados: {
+  name: string;
+  description?: string;
+  amount: number;
+  cycle?: BillingCycle;
+  variable_metric?: BillingMetric;
+  variable_threshold?: number;
+  variable_pct?: number;
+  features?: string[];
+}): Promise<Plan> {
+  return request<Plan>("/plans", { method: "POST", body: JSON.stringify(dados) });
+}
+
+export function fetchSubscriptions(): Promise<Subscription[]> {
+  return request<Subscription[]>("/subscriptions");
+}
+
+export function createSubscription(dados: {
+  client_id: string;
+  plan_id: string;
+  next_due_date: string;
+  cpf_cnpj?: string;
+  email?: string;
+}): Promise<Subscription> {
+  return request<Subscription>("/subscriptions", {
+    method: "POST",
+    body: JSON.stringify(dados),
+  });
+}
+
+export function cancelSubscription(id: string): Promise<{ ok: true }> {
+  return request<{ ok: true }>(`/subscriptions/${id}`, { method: "DELETE" });
+}
+
+export function fetchInvoices(): Promise<Invoice[]> {
+  return request<Invoice[]>("/invoices");
+}
+
+export function fetchBillingSummary(): Promise<BillingSummary> {
+  return request<BillingSummary>("/billing/summary");
+}
+
+export function fetchVariablePreview(subscriptionId: string): Promise<VariablePreview | null> {
+  return request<VariablePreview | null>(`/subscriptions/${subscriptionId}/variable`);
+}
