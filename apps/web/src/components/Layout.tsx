@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, ChevronLeft, ChevronRight, LogOut, Menu, User } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, KeyRound, LogOut, Menu, User } from "lucide-react";
+import TrocarSenha from "@/components/TrocarSenha";
 import { cn } from "@/lib/utils";
 import { fetchHealth } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -80,7 +81,13 @@ function ApiStatus() {
 /**
  * Identificação do usuário. Clicar abre o menu com a opção de sair.
  */
-function UserMenu({ collapsed }: { collapsed: boolean }) {
+function UserMenu({
+  collapsed,
+  aoTrocarSenha,
+}: {
+  collapsed: boolean;
+  aoTrocarSenha: () => void;
+}) {
   const { user, role, sair } = useAuth();
   const [aberto, setAberto] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -148,6 +155,19 @@ function UserMenu({ collapsed }: { collapsed: boolean }) {
               {papel}
             </span>
           </div>
+
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setAberto(false);
+              aoTrocarSenha();
+            }}
+            className="flex w-full items-center gap-2.5 border-b border-white/10 px-3 py-2.5 text-left text-xs font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
+          >
+            <KeyRound className="h-3.5 w-3.5 shrink-0" />
+            Alterar senha
+          </button>
 
           <button
             type="button"
@@ -229,6 +249,7 @@ export default function Layout() {
   const [collapsed, setCollapsed] = useState(false);
   const closeMobile = () => setMobileOpen(false);
   const itens = navForUser(isStaff);
+  const [trocandoSenha, setTrocandoSenha] = useState(false);
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -302,7 +323,7 @@ export default function Layout() {
 
         {/* Rodapé */}
         <div className="relative z-10 space-y-2 border-t border-white/10 px-3 py-3">
-          <UserMenu collapsed={collapsed} />
+          <UserMenu collapsed={collapsed} aoTrocarSenha={() => setTrocandoSenha(true)} />
           {!collapsed && (
             <p className="text-[10px] text-white/30 text-center">4Him Technology · Ads v0.1</p>
           )}
@@ -332,6 +353,8 @@ export default function Layout() {
           <Outlet />
         </main>
       </div>
+
+      <TrocarSenha aberto={trocandoSenha} aoFechar={() => setTrocandoSenha(false)} />
     </div>
   );
 }

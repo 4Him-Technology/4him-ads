@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { Link, Navigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff, Loader2, LockKeyhole } from "lucide-react";
 import { ApiError, useAuth } from "@/lib/auth";
 
@@ -108,9 +108,17 @@ export default function Login() {
             </div>
 
             <div>
-              <label htmlFor="senha" className="block text-sm font-medium text-foreground">
-                Senha
-              </label>
+              <div className="flex items-baseline justify-between">
+                <label htmlFor="senha" className="block text-sm font-medium text-foreground">
+                  Senha
+                </label>
+                <Link
+                  to="/esqueci-senha"
+                  className="text-xs text-muted-foreground transition hover:text-primary"
+                >
+                  Esqueci minha senha
+                </Link>
+              </div>
               <div className="relative mt-1.5">
                 <input
                   id="senha"

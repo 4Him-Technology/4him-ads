@@ -15,11 +15,10 @@ export default defineConfig({
     port: 5174,
     strictPort: true,
     proxy: {
-      "/api": {
-        target: "http://localhost:3333",
-        changeOrigin: true,
-        rewrite: (p) => p.replace(/^\/api/, ""),
-      },
+      // Sem reescrita: a API expõe as rotas sob /api tanto em
+      // desenvolvimento quanto em produção. Assim o caminho é idêntico
+      // nos dois ambientes e não há surpresa no deploy.
+      "/api": { target: "http://localhost:3333", changeOrigin: true },
     },
   },
 });

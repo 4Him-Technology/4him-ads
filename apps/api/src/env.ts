@@ -28,6 +28,13 @@ const schema = z.object({
   /** Chave AES para cifrar tokens de plataforma antes de gravar no banco. */
   ENCRYPTION_KEY: z.string().optional(),
 
+  // --- E-mail (Resend). Sem isto, o sistema apenas registra e não envia. ---
+  RESEND_API_KEY: z.string().optional(),
+  /** Remetente verificado no provedor. Ex.: "4Him Ads <ads@4him.com.br>" */
+  EMAIL_FROM: z.string().optional(),
+  /** Endereço público do sistema — usado nos links dos e-mails. */
+  APP_URL: z.string().default("http://localhost:5174"),
+
   // --- Asaas (cobrança recorrente do serviço) ---
   ASAAS_API_KEY: z.string().optional(),
   ASAAS_ENV: z.enum(["sandbox", "production"]).default("sandbox"),

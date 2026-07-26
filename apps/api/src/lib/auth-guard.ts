@@ -136,7 +136,7 @@ export async function requireSameOrigin(request: FastifyRequest, reply: FastifyR
 
   // Webhooks vêm de servidores externos e não têm como enviar este
   // cabeçalho. Eles se autenticam pelo próprio token combinado.
-  if (request.url.startsWith("/webhooks/")) return;
+  if (request.url.startsWith("/api/webhooks/")) return;
 
   if (request.headers["x-4him-app"] !== "web") {
     return reply.code(403).send({ error: "requisição não permitida" });

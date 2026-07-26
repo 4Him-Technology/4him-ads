@@ -20,7 +20,8 @@
     "bootstrap": "node scripts/bootstrap.mjs",
     "unlock": "node scripts/unlock-login.mjs",
     "seed:plans": "node scripts/seed-plans.mjs",
-    "client:context": "node scripts/client-context.mjs"
+    "client:context": "node scripts/client-context.mjs",
+    "email:log": "node scripts/email-log.mjs"
   },
   "devDependencies": {
     "dotenv": "^16.4.7",

@@ -2,6 +2,8 @@ import { Route, Routes } from "react-router-dom";
 import Layout from "@/components/Layout";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Login from "@/pages/Login";
+import EsqueciSenha from "@/pages/EsqueciSenha";
+import RedefinirSenha from "@/pages/RedefinirSenha";
 import Dashboard from "@/pages/Dashboard";
 import Campanhas from "@/pages/Campanhas";
 import Criativos from "@/pages/Criativos";
@@ -22,6 +24,8 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/esqueci-senha" element={<EsqueciSenha />} />
+      <Route path="/redefinir-senha" element={<RedefinirSenha />} />
 
       {/* Tudo abaixo exige sessão válida */}
       <Route element={<ProtectedRoute />}>

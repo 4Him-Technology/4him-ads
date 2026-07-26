@@ -1,0 +1,59 @@
+# ============================================================
+# Deploy no Render — serviço único (API + site)
+#
+# Como usar:
+#   1. render.com → New → Blueprint → conecte o repositório
+#   2. O Render lê este arquivo e cria o serviço
+#   3. Preencha as variáveis marcadas como sync:false no painel
+#
+# O plano gratuito hiberna após inatividade: a primeira visita depois de
+# um tempo parado demora ~30s. Serve bem para o link de teste.
+# ============================================================
+
+services:
+  - type: web
+    name: 4him-ads
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    healthCheckPath: /api/health
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      # O Render injeta a porta; a aplicação respeita esta variável.
+      - key: API_PORT
+        value: 10000
+
+      # Preenchidos no painel do Render (nunca no repositório):
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+      - key: ENCRYPTION_KEY
+        sync: false
+      - key: ASAAS_API_KEY
+        sync: false
+      - key: ASAAS_ENV
+        value: sandbox
+      - key: ASAAS_WEBHOOK_TOKEN
+        sync: false
+
+      # Endereço público do serviço — usado nos links dos e-mails e no
+      # CORS. Ajuste depois de saber a URL que o Render gerou.
+      - key: APP_URL
+        sync: false
+      - key: WEB_ORIGIN
+        sync: false
+
+      # E-mail (opcional; sem isto o sistema registra e não envia)
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false

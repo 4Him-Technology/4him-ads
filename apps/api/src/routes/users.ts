@@ -1,8 +1,10 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { orgIdOf, requireAdmin, requireAuth, requireStaff } from "../lib/auth-guard.js";
+import { env } from "../env.js";
 import { getServiceClient } from "../supabase.js";
 import { criarOuObterUsuario, gerarSenhaTemporaria } from "../lib/supabase-admin.js";
+import { enviarEmail, isEmailConfigured, templateConvite } from "../lib/email.js";
 
 const convidarEquipeSchema = z.object({
   email: z.string().trim().email().max(320),
@@ -64,8 +66,24 @@ export async function userRoutes(app: FastifyInstance) {
 
       if (error) throw new Error(error.message);
 
+      // Envia as credenciais por e-mail quando há provedor configurado.
+      let emailEnviado = false;
+      if (!usuario.jaExistia) {
+        const msg = templateConvite({ nome, email, senha, url: env.APP_URL });
+        const r = await enviarEmail({
+          para: email,
+          assunto: msg.assunto,
+          template: "convite_equipe",
+          html: msg.html,
+          texto: msg.texto,
+          orgId,
+          metadata: { role },
+        });
+        emailEnviado = r.enviado;
+      }
+
       request.log.info(
-        { convidado: usuario.id, role, por: request.ctx?.profile.id },
+        { convidado: usuario.id, role, por: request.ctx?.profile.id, emailEnviado },
         "membro da equipe convidado",
       );
 
@@ -76,6 +94,8 @@ export async function userRoutes(app: FastifyInstance) {
         // Só faz sentido devolver senha para quem acabou de ser criado.
         senhaTemporaria: usuario.jaExistia ? null : senha,
         jaExistia: usuario.jaExistia,
+        emailEnviado,
+        emailConfigurado: isEmailConfigured,
       });
     } catch (err) {
       request.log.error({ err: (err as Error).message }, "falha ao convidar equipe");
@@ -130,8 +150,28 @@ export async function userRoutes(app: FastifyInstance) {
 
         if (error) throw new Error(error.message);
 
+        let emailEnviado = false;
+        if (!usuario.jaExistia) {
+          const msg = templateConvite({
+            nome,
+            email,
+            senha,
+            url: env.APP_URL,
+            cliente: cliente.name,
+          });
+          const r = await enviarEmail({
+            para: email,
+            assunto: msg.assunto,
+            template: "convite_cliente",
+            html: msg.html,
+            texto: msg.texto,
+            metadata: { clientId: cliente.id },
+          });
+          emailEnviado = r.enviado;
+        }
+
         request.log.info(
-          { convidado: usuario.id, clientId: cliente.id, por: request.ctx?.profile.id },
+          { convidado: usuario.id, clientId: cliente.id, por: request.ctx?.profile.id, emailEnviado },
           "acesso de cliente concedido",
         );
 
@@ -141,6 +181,8 @@ export async function userRoutes(app: FastifyInstance) {
           cliente: cliente.name,
           senhaTemporaria: usuario.jaExistia ? null : senha,
           jaExistia: usuario.jaExistia,
+          emailEnviado,
+          emailConfigurado: isEmailConfigured,
         });
       } catch (err) {
         request.log.error({ err: (err as Error).message }, "falha ao convidar cliente");
