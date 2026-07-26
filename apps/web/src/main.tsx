@@ -18,7 +18,8 @@ const queryClient = new QueryClient({
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      {/* BASE_URL cobre a publicação em subpasta (GitHub Pages). */}
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
         <AuthProvider>
           <App />
         </AuthProvider>

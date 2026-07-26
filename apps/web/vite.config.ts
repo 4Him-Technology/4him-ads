@@ -2,8 +2,12 @@ import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react()],
+
+  // No GitHub Pages o site fica em /4him-ads/, não na raiz do domínio.
+  base: mode === "pages" ? "/4him-ads/" : "/",
+
   resolve: {
     alias: {
       // Mesma convenção do CRM: `@/lib/utils`, `@/components/...`
@@ -21,4 +25,4 @@ export default defineConfig({
       "/api": { target: "http://localhost:3333", changeOrigin: true },
     },
   },
-});
+}));

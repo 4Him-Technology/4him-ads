@@ -1,0 +1,57 @@
+# Publica o site no GitHub Pages a cada push na main.
+#
+# O Pages serve apenas arquivos estáticos: esta versão roda com dados de
+# exemplo, para visualizar as telas. O sistema real (com API e banco)
+# roda em outra hospedagem.
+
+name: Publicar demonstração no Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Um deploy por vez; não cancela o que já está em andamento.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build da demonstração
+        run: npm run build:pages --workspace @4him/web
+
+      # O Pages não conhece as rotas do SPA. Servir o index como 404 faz
+      # /clientes e afins abrirem direto, sem "página não encontrada".
+      - name: Fallback de rotas do SPA
+        run: cp apps/web/dist/index.html apps/web/dist/404.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/web/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

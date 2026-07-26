@@ -1,7 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, ChevronLeft, ChevronRight, KeyRound, LogOut, Menu, User } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  KeyRound,
+  LogOut,
+  Menu,
+  TriangleAlert,
+  User,
+} from "lucide-react";
 import TrocarSenha from "@/components/TrocarSenha";
 import { cn } from "@/lib/utils";
 import { fetchHealth } from "@/lib/api";
@@ -217,6 +226,25 @@ function UserMenu({
   );
 }
 
+/**
+ * Aviso de que os números são fictícios.
+ * Só aparece na publicação do GitHub Pages, onde não há API — evita que
+ * dados de exemplo sejam confundidos com resultado real de cliente.
+ */
+function SeloDemonstracao() {
+  if (import.meta.env.MODE !== "pages") return null;
+
+  return (
+    <span
+      title="Versão de demonstração: os números são fictícios e nada é salvo."
+      className="flex items-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-700"
+    >
+      <TriangleAlert className="h-3 w-3" />
+      Demonstração
+    </span>
+  );
+}
+
 /** Seletor de cliente — alimentado pelos clientes que o usuário pode ver. */
 function ClientSelector() {
   const { user } = useAuth();
@@ -345,6 +373,7 @@ export default function Layout() {
               {titleForPath(location.pathname)}
             </h1>
           </div>
+          <SeloDemonstracao />
           <ClientSelector />
           <ApiStatus />
         </header>

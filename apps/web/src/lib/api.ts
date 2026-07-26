@@ -24,7 +24,71 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * No build do GitHub Pages não existe API — só arquivos estáticos.
+ * As chamadas são atendidas por dados de exemplo, para permitir navegar
+ * pelas telas. Carregado sob demanda para não pesar o build normal.
+ */
+async function respostaDeDemonstracao<T>(caminho: string, metodo: string): Promise<T> {
+  const d = await import("./demo");
+  // Ignora a query (período etc.) para casar as rotas.
+  const path = caminho.split("?")[0] ?? caminho;
+
+  if (path === "/auth/me") return d.demoUser as T;
+  if (path.startsWith("/auth/")) return { ok: true } as T;
+  if (path === "/health") return { status: "ok" } as T;
+  if (path === "/dashboard/overview") return d.demoVisaoGerencial as T;
+  if (path === "/plans") return d.demoPlans as T;
+  if (path === "/subscriptions") return d.demoSubscriptions as T;
+  if (path === "/invoices") return d.demoInvoices as T;
+  if (path === "/billing/summary") {
+    const g = d.demoVisaoGerencial;
+    return {
+      mrr: g.mrr,
+      assinaturas_ativas: 2,
+      em_carencia: 1,
+      inadimplentes: 0,
+      a_receber: g.a_receber,
+      vencidas: 0,
+      recebido_mes: g.recebido_periodo,
+    } as T;
+  }
+  if (path === "/clients") return d.demoClients as T;
+
+  const cliente = path.match(/^\/clients\/([^/?]+)/);
+  if (cliente) {
+    const id = cliente[1]!;
+    if (path.includes("/overview")) return d.demoVisaoCliente(id) as T;
+    if (path.includes("/access")) return [] as T;
+    const achado = d.demoClients.find((c) => c.id === id);
+    if (achado) return achado as T;
+  }
+
+  if (path.includes("/variable")) {
+    return {
+      metric: "ad_spend",
+      metric_value: 9200,
+      threshold: 5000,
+      pct: 10,
+      excedente: 4200,
+      amount: 420,
+      em_carencia: false,
+      carencia_ate: new Date().toISOString().slice(0, 10),
+    } as T;
+  }
+
+  // Escrita não faz sentido sem servidor.
+  if (metodo !== "GET") {
+    throw new ApiError(400, "Esta é uma demonstração visual — não há servidor para salvar.");
+  }
+  return [] as T;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  if (import.meta.env.MODE === "pages") {
+    return respostaDeDemonstracao<T>(path, init?.method ?? "GET");
+  }
+
   const res = await fetch(`${API_BASE}${path}`, {
     ...init,
     credentials: "include",
@@ -138,6 +202,11 @@ export function resetPassword(token: string, novaSenha: string): Promise<{ ok: t
 }
 
 export async function fetchMe(): Promise<UserContext | null> {
+  // Na demonstração já entra autenticado — não há servidor para validar.
+  if (import.meta.env.MODE === "pages") {
+    return (await import("./demo")).demoUser;
+  }
+
   const res = await fetch(`${API_BASE}/auth/me`, {
     credentials: "include",
     headers: APP_HEADER,
