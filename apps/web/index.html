@@ -13,6 +13,48 @@
   </head>
   <body>
     <div id="root"></div>
+
+    <!--
+      Rede de segurança: se o aplicativo não montar (navegador antigo, erro
+      de script, arquivo bloqueado), a tela ficaria em branco sem explicação
+      alguma — o pior tipo de falha, porque não dá nem para diagnosticar.
+      Este trecho mostra o motivo na própria página.
+    -->
+    <div id="falha-ao-carregar" style="display: none"></div>
+    <script>
+      (function () {
+        var caixa = document.getElementById("falha-ao-carregar");
+
+        function mostrar(titulo, detalhe) {
+          caixa.style.cssText =
+            "display:block;max-width:640px;margin:12vh auto;padding:24px;" +
+            "font-family:system-ui,Arial,sans-serif;color:#231f1a;line-height:1.6";
+          caixa.innerHTML =
+            '<h1 style="font-size:20px;margin:0 0 12px">' + titulo + "</h1>" +
+            '<p style="margin:0 0 16px;color:#5f5a52">Se o problema continuar, atualize o navegador para a versão mais recente.</p>' +
+            '<pre style="white-space:pre-wrap;word-break:break-word;background:#f1efe8;' +
+            'border:1px solid #ddd8cd;border-radius:8px;padding:12px;font-size:12px;margin:0">' +
+            String(detalhe || "sem detalhes") + "</pre>";
+        }
+
+        window.addEventListener("error", function (e) {
+          if (!document.getElementById("root").hasChildNodes()) {
+            mostrar("Não foi possível carregar o sistema", e.message + "\n" + (e.filename || ""));
+          }
+        });
+
+        // Se em 6 segundos nada foi renderizado, algo travou silenciosamente.
+        setTimeout(function () {
+          if (!document.getElementById("root").hasChildNodes()) {
+            mostrar(
+              "O sistema não carregou",
+              "O navegador não executou o aplicativo. Isso costuma acontecer em versões antigas do navegador ou quando uma extensão bloqueia o script.",
+            );
+          }
+        }, 6000);
+      })();
+    </script>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

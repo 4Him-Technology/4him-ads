@@ -8,6 +8,13 @@ export default defineConfig(({ mode }) => ({
   // No GitHub Pages o site fica em /4him-ads/, não na raiz do domínio.
   base: mode === "pages" ? "/4him-ads/" : "/",
 
+  build: {
+    // O padrão do Vite exige navegador bem recente. Navegador desatualizado
+    // não avisa: simplesmente não executa o script e a tela fica em branco.
+    // Este alvo cobre versões bem mais antigas sem custo perceptível.
+    target: ["es2019", "chrome79", "edge79", "firefox70", "safari13"],
+  },
+
   resolve: {
     alias: {
       // Mesma convenção do CRM: `@/lib/utils`, `@/components/...`
