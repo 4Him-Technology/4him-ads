@@ -18,7 +18,8 @@
     "db:status": "node scripts/migrate.mjs --dry",
     "db:check": "node scripts/db-check.mjs",
     "bootstrap": "node scripts/bootstrap.mjs",
-    "unlock": "node scripts/unlock-login.mjs"
+    "unlock": "node scripts/unlock-login.mjs",
+    "seed:plans": "node scripts/seed-plans.mjs"
   },
   "devDependencies": {
     "dotenv": "^16.4.7",
