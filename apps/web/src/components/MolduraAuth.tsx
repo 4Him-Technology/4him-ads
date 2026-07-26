@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { LockKeyhole } from "lucide-react";
+import { asset } from "@/lib/utils";
 
 /** Moldura das telas de acesso (login, recuperação), com a marca 4Him. */
 export default function MolduraAuth({
@@ -19,7 +20,7 @@ export default function MolduraAuth({
         style={{ backgroundColor: "#000000" }}
       >
         <img
-          src="/images/logo-full.png"
+          src={asset("images/logo-full.png")}
           alt="4Him Technology"
           className="h-14 w-auto object-contain"
         />
@@ -50,7 +51,11 @@ export default function MolduraAuth({
       {/* Conteúdo */}
       <div className="flex items-center justify-center bg-background p-6">
         <div className="w-full max-w-sm">
-          <img src="/images/logo-icon.png" alt="" className="mb-6 h-12 w-12 object-contain lg:hidden" />
+          <img
+            src={asset("images/logo-icon.png")}
+            alt=""
+            className="mb-6 h-12 w-12 object-contain lg:hidden"
+          />
 
           <h2 className="text-2xl font-bold text-foreground">{titulo}</h2>
           {descricao && <p className="mt-1 text-sm text-muted-foreground">{descricao}</p>}

@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff, Loader2, LockKeyhole } from "lucide-react";
 import { ApiError, useAuth } from "@/lib/auth";
+import { asset } from "@/lib/utils";
 
 export default function Login() {
   const { user, carregando, entrar } = useAuth();
@@ -47,7 +48,11 @@ export default function Login() {
         className="hidden lg:flex flex-col justify-between p-10 relative overflow-hidden"
         style={{ backgroundColor: "#000000" }}
       >
-        <img src="/images/logo-full.png" alt="4Him Technology" className="h-14 w-auto object-contain" />
+        <img
+          src={asset("images/logo-full.png")}
+          alt="4Him Technology"
+          className="h-14 w-auto object-contain"
+        />
 
         <div className="relative z-10">
           <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-[#c49a3c]/70">
@@ -79,7 +84,7 @@ export default function Login() {
       <div className="flex items-center justify-center p-6 bg-background">
         <div className="w-full max-w-sm">
           <img
-            src="/images/logo-icon.png"
+            src={asset("images/logo-icon.png")}
             alt=""
             className="lg:hidden mb-6 h-12 w-12 object-contain"
           />

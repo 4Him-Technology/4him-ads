@@ -12,7 +12,7 @@ import {
   User,
 } from "lucide-react";
 import TrocarSenha from "@/components/TrocarSenha";
-import { cn } from "@/lib/utils";
+import { asset, cn } from "@/lib/utils";
 import { fetchHealth } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { ROLE_LABELS, navForUser, titleForPath, type NavItem } from "@/lib/nav";
@@ -316,7 +316,7 @@ export default function Layout() {
           {/* logo-full-white.png tem fundo branco chapado — na sidebar preta usamos
               logo-full.png (fundo #000) e o ícone, que é de fato transparente. */}
           <img
-            src={collapsed ? "/images/logo-icon.png" : "/images/logo-full.png"}
+            src={asset(collapsed ? "images/logo-icon.png" : "images/logo-full.png")}
             alt="4Him Technology"
             className={cn("object-contain drop-shadow-2xl", collapsed ? "h-10 w-10" : "h-14 w-auto")}
           />
