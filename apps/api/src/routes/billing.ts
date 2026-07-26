@@ -181,6 +181,61 @@ export async function billingRoutes(app: FastifyInstance) {
     }
   });
 
+  /**
+   * PATCH /subscriptions/:id — renegocia as condições.
+   *
+   * Valor e regra variável são do CONTRATO, não do plano: mudar aqui não
+   * afeta nenhum outro cliente. Se o valor mudar e houver assinatura no
+   * provedor, ela também é atualizada lá.
+   */
+  app.patch<{ Params: { id: string } }>(
+    "/subscriptions/:id",
+    { preHandler: [requireAuth, requireAdmin] },
+    async (request, reply) => {
+      const schema = z.object({
+        amount: z.number().nonnegative().max(1_000_000).optional(),
+        setup_fee: z.number().nonnegative().max(1_000_000).nullable().optional(),
+        next_due_date: z.string().date().optional(),
+        variable_metric: z.enum(["ad_spend", "revenue", "conversions", "leads"]).nullable().optional(),
+        variable_pct: z.number().min(0).max(100).nullable().optional(),
+        variable_threshold: z.number().nonnegative().nullable().optional(),
+        variable_cap: z.number().nonnegative().nullable().optional(),
+        variable_grace_months: z.number().int().min(0).max(24).nullable().optional(),
+        notes: z.string().max(2000).nullable().optional(),
+      });
+
+      const parsed = schema.safeParse(request.body);
+      if (!parsed.success) return reply.code(400).send({ error: "dados inválidos" });
+
+      const { data: atual } = await request
+        .db!.from("subscriptions")
+        .select("id, asaas_subscription_id, amount, cycle, next_due_date")
+        .eq("id", request.params.id)
+        .single();
+
+      if (!atual) return reply.code(404).send({ error: "assinatura não encontrada" });
+
+      const service = getServiceClient();
+      const { data, error } = await service
+        .from("subscriptions")
+        .update(parsed.data)
+        .eq("id", request.params.id)
+        .select()
+        .single();
+
+      if (error) {
+        request.log.error({ err: error.message }, "falha ao renegociar");
+        return reply.code(500).send({ error: "erro ao atualizar" });
+      }
+
+      request.log.info(
+        { subscriptionId: data.id, por: request.ctx?.profile.id },
+        "condições renegociadas",
+      );
+      return data;
+    },
+  );
+
   app.delete<{ Params: { id: string } }>(
     "/subscriptions/:id",
     { preHandler: [requireAuth, requireAdmin] },

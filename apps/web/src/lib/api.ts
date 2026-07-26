@@ -133,6 +133,23 @@ export async function fetchMe(): Promise<UserContext | null> {
 // Clientes
 // ============================================================
 
+/** Contrato do cliente. Os valores aqui são os NEGOCIADOS, não os do plano. */
+export interface ClientSubscription {
+  id: string;
+  status: SubscriptionStatus;
+  amount: number;
+  cycle: BillingCycle;
+  setup_fee: number | null;
+  next_due_date: string | null;
+  started_at: string;
+  variable_metric: BillingMetric | null;
+  variable_pct: number | null;
+  variable_threshold: number | null;
+  variable_grace_months: number | null;
+  notes: string | null;
+  plans: { id: string; name: string } | null;
+}
+
 export interface Client {
   id: string;
   name: string;
@@ -142,6 +159,28 @@ export interface Client {
   timezone: string;
   brand_color: string | null;
   created_at: string;
+  document: string | null;
+  contact_name: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  segment: string | null;
+  notes: string | null;
+  ad_account_model: "client_owned" | "agency_owned";
+  meta_business_id: string | null;
+  billing_health: "unknown" | "ok" | "missing" | "failing";
+  subscriptions: ClientSubscription[];
+  // Briefing — contexto para a IA
+  business_description: string | null;
+  target_audience: string | null;
+  value_proposition: string | null;
+  main_products: string | null;
+  service_area: string | null;
+  avg_ticket: number | null;
+  campaign_goal: string | null;
+  competitors: string[] | null;
+  seed_keywords: string[] | null;
+  restrictions: string | null;
+  website: string | null;
 }
 
 export interface NovoCliente {
@@ -149,6 +188,43 @@ export interface NovoCliente {
   slug: string;
   currency?: string;
   timezone?: string;
+  document?: string;
+  contact_name?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  segment?: string;
+  notes?: string;
+  ad_account_model?: "client_owned" | "agency_owned";
+  business_description?: string;
+  target_audience?: string;
+  value_proposition?: string;
+  main_products?: string;
+  service_area?: string;
+  avg_ticket?: number;
+  campaign_goal?: string;
+  competitors?: string[];
+  seed_keywords?: string[];
+  restrictions?: string;
+  website?: string;
+}
+
+export interface NovoContrato {
+  plan_id: string;
+  amount: number;
+  setup_fee?: number;
+  next_due_date: string;
+  cycle?: BillingCycle;
+  variable_metric?: BillingMetric;
+  variable_pct?: number;
+  variable_threshold?: number;
+  variable_grace_months?: number;
+  notes?: string;
+}
+
+export interface CadastroCompletoResultado {
+  cliente: { id: string; name: string; slug: string };
+  contrato: { id: string; amount: number; setup_fee: number | null } | null;
+  aviso?: string;
 }
 
 export function fetchClients(): Promise<Client[]> {
@@ -157,6 +233,37 @@ export function fetchClients(): Promise<Client[]> {
 
 export function createClient(dados: NovoCliente): Promise<Client> {
   return request<Client>("/clients", { method: "POST", body: JSON.stringify(dados) });
+}
+
+/** Cadastra cliente e contrato numa única operação (tela de duas colunas). */
+export function createClientFull(dados: {
+  cliente: NovoCliente;
+  contrato?: NovoContrato;
+}): Promise<CadastroCompletoResultado> {
+  return request<CadastroCompletoResultado>("/clients/full", {
+    method: "POST",
+    body: JSON.stringify(dados),
+  });
+}
+
+/** Renegocia as condições de um contrato existente. */
+export function updateSubscription(
+  id: string,
+  dados: Partial<{
+    amount: number;
+    setup_fee: number | null;
+    next_due_date: string;
+    variable_metric: BillingMetric | null;
+    variable_pct: number | null;
+    variable_threshold: number | null;
+    variable_grace_months: number | null;
+    notes: string | null;
+  }>,
+): Promise<ClientSubscription> {
+  return request<ClientSubscription>(`/subscriptions/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(dados),
+  });
 }
 
 export function updateClient(id: string, dados: Partial<NovoCliente> & { status?: string }) {

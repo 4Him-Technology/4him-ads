@@ -1,17 +1,21 @@
 import { useEffect, type ReactNode } from "react";
 import { X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function Modal({
   aberto,
   aoFechar,
   titulo,
   descricao,
+  largo = false,
   children,
 }: {
   aberto: boolean;
   aoFechar: () => void;
   titulo: string;
   descricao?: string;
+  /** Modal largo, para formulários em duas colunas. */
+  largo?: boolean;
   children: ReactNode;
 }) {
   useEffect(() => {
@@ -30,7 +34,10 @@ export default function Modal({
         role="dialog"
         aria-modal="true"
         aria-label={titulo}
-        className="relative z-10 w-full max-w-md rounded-xl border border-border bg-card p-5 shadow-xl"
+        className={cn(
+          "relative z-10 w-full rounded-xl border border-border bg-card p-5 shadow-xl",
+          largo ? "max-h-[92vh] max-w-4xl overflow-y-auto" : "max-w-md",
+        )}
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>

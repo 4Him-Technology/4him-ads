@@ -19,7 +19,8 @@
     "db:check": "node scripts/db-check.mjs",
     "bootstrap": "node scripts/bootstrap.mjs",
     "unlock": "node scripts/unlock-login.mjs",
-    "seed:plans": "node scripts/seed-plans.mjs"
+    "seed:plans": "node scripts/seed-plans.mjs",
+    "client:context": "node scripts/client-context.mjs"
   },
   "devDependencies": {
     "dotenv": "^16.4.7",
