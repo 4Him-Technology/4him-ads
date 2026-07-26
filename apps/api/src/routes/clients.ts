@@ -78,6 +78,16 @@ const atualizarClienteSchema = criarClienteSchema
 
 const CICLO_ASAAS = { monthly: "MONTHLY", quarterly: "QUARTERLY", yearly: "YEARLY" } as const;
 
+/** Período consultado; padrão = mês corrente. */
+export function periodo(q: { inicio?: string; fim?: string }) {
+  const hoje = new Date();
+  const primeiro = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  return {
+    inicio: q.inicio ?? primeiro.toISOString().slice(0, 10),
+    fim: q.fim ?? hoje.toISOString().slice(0, 10),
+  };
+}
+
 /**
  * Cria a assinatura com as condições NEGOCIADAS e, havendo implantação,
  * a cobrança avulsa dela.
@@ -336,6 +346,70 @@ export async function clientRoutes(app: FastifyInstance) {
           aviso: `Cliente cadastrado, mas o contrato não pôde ser criado: ${(err as Error).message}`,
         });
       }
+    },
+  );
+
+  /** GET /clients/:id — um cliente com contrato e acessos. */
+  app.get<{ Params: { id: string } }>(
+    "/clients/:id",
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const { data, error } = await request
+        .db!.from("clients")
+        .select(
+          `*, subscriptions(id, status, amount, cycle, setup_fee, next_due_date,
+                            variable_metric, variable_pct, variable_threshold,
+                            variable_grace_months, started_at, notes, plans(id, name))`,
+        )
+        .eq("id", request.params.id)
+        .single();
+
+      // RLS barrando e id inexistente devolvem o mesmo 404 — não revela
+      // a existência de clientes de terceiros.
+      if (error || !data) return reply.code(404).send({ error: "cliente não encontrado" });
+      return data;
+    },
+  );
+
+  /** GET /clients/:id/overview — números do cliente no período. */
+  app.get<{ Params: { id: string }; Querystring: { inicio?: string; fim?: string } }>(
+    "/clients/:id/overview",
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const { inicio, fim } = periodo(request.query);
+
+      const { data, error } = await request.db!.rpc("resumo_cliente", {
+        p_client: request.params.id,
+        p_inicio: inicio,
+        p_fim: fim,
+      });
+
+      if (error) {
+        request.log.error({ err: error.message }, "falha no resumo do cliente");
+        return reply.code(500).send({ error: "erro ao carregar dados" });
+      }
+      return data;
+    },
+  );
+
+  /** PATCH /clients/:id/briefing — atualiza o contexto usado pela IA. */
+  app.patch<{ Params: { id: string } }>(
+    "/clients/:id/briefing",
+    { preHandler: [requireAuth, requireStaff] },
+    async (request, reply) => {
+      const schema = criarClienteSchema.partial().omit({ slug: true, name: true });
+      const parsed = schema.safeParse(request.body);
+      if (!parsed.success) return reply.code(400).send({ error: "dados inválidos" });
+
+      const { data, error } = await request
+        .db!.from("clients")
+        .update(parsed.data)
+        .eq("id", request.params.id)
+        .select()
+        .single();
+
+      if (error || !data) return reply.code(404).send({ error: "cliente não encontrado" });
+      return data;
     },
   );
 

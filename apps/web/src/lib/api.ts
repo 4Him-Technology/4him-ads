@@ -457,3 +457,94 @@ export function fetchBillingSummary(): Promise<BillingSummary> {
 export function fetchVariablePreview(subscriptionId: string): Promise<VariablePreview | null> {
   return request<VariablePreview | null>(`/subscriptions/${subscriptionId}/variable`);
 }
+
+// ============================================================
+// Visão gerencial
+// ============================================================
+
+export interface Periodo {
+  inicio: string;
+  fim: string;
+}
+
+export interface ClienteResumo {
+  id: string;
+  name: string;
+  status: string;
+  verba: number;
+  receita: number;
+  conversoes: number;
+}
+
+export interface VisaoGerencial {
+  periodo: Periodo;
+  verba: number;
+  receita: number;
+  conversoes: number;
+  cliques: number;
+  impressoes: number;
+  roas: number;
+  cpa: number;
+  clientes_ativos: number;
+  clientes_total: number;
+  mrr: number;
+  recebido_periodo: number;
+  a_receber: number;
+  inadimplentes: number;
+  clientes: ClienteResumo[];
+}
+
+export interface CampanhaResumo {
+  id: string;
+  name: string;
+  status: string;
+  platform: string;
+  daily_budget: number | null;
+}
+
+export interface FaturaResumo {
+  id: string;
+  amount: number;
+  due_date: string;
+  status: InvoiceStatus;
+  invoice_url: string | null;
+}
+
+export interface VisaoCliente {
+  verba: number;
+  receita: number;
+  conversoes: number;
+  cliques: number;
+  impressoes: number;
+  roas: number;
+  cpa: number;
+  ctr: number;
+  serie: { date: string; verba: number; receita: number; conversoes: number }[];
+  campanhas: CampanhaResumo[];
+  criativos_total: number;
+  faturas: FaturaResumo[];
+}
+
+function comPeriodo(base: string, p?: Periodo) {
+  if (!p) return base;
+  return `${base}?inicio=${p.inicio}&fim=${p.fim}`;
+}
+
+export function fetchVisaoGerencial(p?: Periodo): Promise<VisaoGerencial> {
+  return request<VisaoGerencial>(comPeriodo("/dashboard/overview", p));
+}
+
+export function fetchClient(id: string): Promise<Client> {
+  return request<Client>(`/clients/${id}`);
+}
+
+export function fetchVisaoCliente(id: string, p?: Periodo): Promise<VisaoCliente> {
+  return request<VisaoCliente>(comPeriodo(`/clients/${id}/overview`, p));
+}
+
+export function updateBriefing(id: string, dados: Partial<NovoCliente>): Promise<Client> {
+  return request<Client>(`/clients/${id}/briefing`, {
+    method: "PATCH",
+    body: JSON.stringify(dados),
+  });
+}

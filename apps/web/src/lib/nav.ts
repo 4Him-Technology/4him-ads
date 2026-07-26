@@ -3,17 +3,13 @@ import {
   Bell,
   Building2,
   CircleDollarSign,
-  Eye,
-  Handshake,
   Images,
   LayoutDashboard,
   ListChecks,
   Megaphone,
   Plug,
   Settings,
-  Settings2,
   Tags,
-  Target,
   UserCog,
   type LucideIcon,
 } from "lucide-react";
@@ -28,84 +24,43 @@ export interface NavItem {
   staffOnly?: boolean;
 }
 
-export interface NavGroup {
-  label: string;
-  icon: LucideIcon;
-  items: NavItem[];
-  /** Grupo inteiro restrito à equipe da agência. */
-  staffOnly?: boolean;
-}
-
 /**
- * Navegação em grupos (mesmo padrão do CRM, que agrupa por vertical).
- * Aqui os grupos refletem os dois mundos de usuário do produto —
- * a equipe 4Him que opera e o cliente que acompanha/aprova — mais a administração.
+ * Menu único e plano.
+ *
+ * Sem agrupamentos: a operação é pequena e o clique a mais para abrir um
+ * grupo custa mais do que a organização economiza. As duas primeiras
+ * entradas são as que se usa o dia inteiro.
  */
-export const NAV_GROUPS: NavGroup[] = [
-  {
-    label: "Operação",
-    icon: Target,
-    items: [
-      { path: "/", label: "Dashboard", icon: LayoutDashboard },
-      { path: "/campanhas", label: "Campanhas", icon: Megaphone, soon: true, staffOnly: true },
-      { path: "/criativos", label: "Criativos", icon: Images, soon: true, staffOnly: true },
-      { path: "/tarefas", label: "Tarefas", icon: ListChecks, soon: true, staffOnly: true },
-      { path: "/alertas", label: "Alertas", icon: Bell, soon: true, staffOnly: true },
-    ],
-  },
-  {
-    label: "Portal do Cliente",
-    icon: Handshake,
-    items: [
-      { path: "/portal", label: "Visão do Cliente", icon: Eye, soon: true },
-      { path: "/aprovacoes", label: "Aprovações", icon: BadgeCheck, soon: true },
-    ],
-  },
-  {
-    label: "Financeiro",
-    icon: CircleDollarSign,
-    staffOnly: true,
-    items: [
-      { path: "/cobranca", label: "Cobrança", icon: CircleDollarSign },
-      { path: "/planos", label: "Planos", icon: Tags },
-    ],
-  },
-  {
-    label: "Administração",
-    icon: Settings2,
-    staffOnly: true,
-    items: [
-      { path: "/clientes", label: "Clientes", icon: Building2 },
-      { path: "/conexoes", label: "Conexões", icon: Plug, soon: true },
-      { path: "/usuarios", label: "Usuários", icon: UserCog, soon: true },
-      { path: "/configuracoes", label: "Configurações", icon: Settings, soon: true },
-    ],
-  },
+export const NAV_ITEMS: NavItem[] = [
+  { path: "/", label: "Visão geral", icon: LayoutDashboard },
+  { path: "/clientes", label: "Clientes", icon: Building2 },
+  { path: "/campanhas", label: "Campanhas", icon: Megaphone, soon: true, staffOnly: true },
+  { path: "/criativos", label: "Criativos", icon: Images, soon: true, staffOnly: true },
+  { path: "/tarefas", label: "Tarefas", icon: ListChecks, soon: true, staffOnly: true },
+  { path: "/alertas", label: "Alertas", icon: Bell, soon: true, staffOnly: true },
+  { path: "/aprovacoes", label: "Aprovações", icon: BadgeCheck, soon: true },
+  { path: "/cobranca", label: "Cobrança", icon: CircleDollarSign, staffOnly: true },
+  { path: "/planos", label: "Planos", icon: Tags, staffOnly: true },
+  { path: "/usuarios", label: "Usuários", icon: UserCog, soon: true, staffOnly: true },
+  { path: "/conexoes", label: "Conexões", icon: Plug, soon: true, staffOnly: true },
+  { path: "/configuracoes", label: "Configurações", icon: Settings, soon: true, staffOnly: true },
 ];
 
-/** Título exibido na barra superior para a rota atual. */
+/** Título da barra superior para a rota atual. */
 export function titleForPath(pathname: string): string {
-  for (const group of NAV_GROUPS) {
-    const match = group.items.find((item) => item.path === pathname);
-    if (match) return match.label;
-  }
-  return "4Him Ads";
+  // Rota de cliente específico: o título vem do próprio cliente na tela.
+  if (pathname.startsWith("/clientes/")) return "Cliente";
+  return NAV_ITEMS.find((item) => item.path === pathname)?.label ?? "4Him Ads";
 }
 
 /**
- * Menu conforme o perfil de quem entrou.
- * O cliente não vê os módulos de operação nem a administração.
+ * Menu conforme o perfil. O cliente vê apenas o que lhe diz respeito.
  * (Esconder é usabilidade — quem barra o acesso de fato é a API e o RLS.)
  */
-export function navForUser(isStaff: boolean): NavGroup[] {
-  if (isStaff) return NAV_GROUPS;
-
-  return NAV_GROUPS.filter((group) => !group.staffOnly)
-    .map((group) => ({ ...group, items: group.items.filter((item) => !item.staffOnly) }))
-    .filter((group) => group.items.length > 0);
+export function navForUser(isStaff: boolean): NavItem[] {
+  return isStaff ? NAV_ITEMS : NAV_ITEMS.filter((item) => !item.staffOnly);
 }
 
-/** Rótulo amigável do papel, para exibir no menu do usuário. */
 export const ROLE_LABELS: Record<string, string> = {
   owner: "Proprietário",
   admin: "Administrador",

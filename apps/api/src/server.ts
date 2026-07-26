@@ -10,6 +10,7 @@ import { authRoutes } from "./routes/auth.js";
 import { clientRoutes } from "./routes/clients.js";
 import { userRoutes } from "./routes/users.js";
 import { billingRoutes } from "./routes/billing.js";
+import { dashboardRoutes } from "./routes/dashboard.js";
 import { webhookRoutes } from "./routes/webhooks.js";
 
 export function buildServer() {
@@ -70,8 +71,9 @@ export function buildServer() {
   app.register(clientRoutes);
   app.register(userRoutes);
   app.register(billingRoutes);
+  app.register(dashboardRoutes);
   app.register(webhookRoutes);
-  // TODO(próxima fase): dashboardRoutes, metaRoutes...
+  // TODO(próxima fase): metaRoutes...
 
   // Erro genérico: não vaza stack trace nem detalhe interno.
   app.setErrorHandler((error: FastifyError, request, reply) => {

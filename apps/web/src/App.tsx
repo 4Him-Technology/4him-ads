@@ -10,6 +10,7 @@ import Alertas from "@/pages/Alertas";
 import Portal from "@/pages/Portal";
 import Aprovacoes from "@/pages/Aprovacoes";
 import Clientes from "@/pages/Clientes";
+import ClienteDetalhe from "@/pages/ClienteDetalhe";
 import Cobranca from "@/pages/Cobranca";
 import Planos from "@/pages/Planos";
 import Conexoes from "@/pages/Conexoes";
@@ -29,6 +30,9 @@ export default function App() {
           <Route index element={<Dashboard />} />
           <Route path="portal" element={<Portal />} />
           <Route path="aprovacoes" element={<Aprovacoes />} />
+          {/* A tela do cliente é acessível à equipe e a quem tem acesso a ele.
+              O RLS garante que o cliente só carregue o próprio. */}
+          <Route path="clientes/:id" element={<ClienteDetalhe />} />
 
           {/* Somente equipe da agência */}
           <Route element={<ProtectedRoute somenteStaff />}>

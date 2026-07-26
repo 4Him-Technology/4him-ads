@@ -5,7 +5,7 @@ import { ChevronDown, ChevronLeft, ChevronRight, LogOut, Menu, User } from "luci
 import { cn } from "@/lib/utils";
 import { fetchHealth } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { ROLE_LABELS, navForUser, titleForPath, type NavGroup, type NavItem } from "@/lib/nav";
+import { ROLE_LABELS, navForUser, titleForPath, type NavItem } from "@/lib/nav";
 
 const GOLD = "#96682c";
 
@@ -33,7 +33,7 @@ function NavLink({
       title={collapsed ? item.label : undefined}
       className={cn(
         "flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-200 px-3 py-2.5",
-        collapsed ? "justify-center" : "pl-6",
+        collapsed && "justify-center",
       )}
       style={{
         color: highlight ? GOLD : "rgba(255,255,255,0.65)",
@@ -49,64 +49,6 @@ function NavLink({
         </span>
       )}
     </Link>
-  );
-}
-
-function NavGroupSection({
-  group,
-  pathname,
-  onLinkClick,
-  collapsed,
-}: {
-  group: NavGroup;
-  pathname: string;
-  onLinkClick: () => void;
-  collapsed: boolean;
-}) {
-  const isGroupActive = group.items.some((item) => item.path === pathname);
-  const [open, setOpen] = useState(isGroupActive);
-  const Icon = group.icon;
-
-  return (
-    <div>
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        title={collapsed ? group.label : undefined}
-        className={cn(
-          "w-full flex items-center gap-3 rounded-lg text-sm font-semibold transition-all duration-200 px-3 py-2.5",
-          collapsed ? "justify-center" : "justify-between",
-        )}
-        style={{
-          color: isGroupActive ? GOLD : "rgba(255,255,255,0.75)",
-          backgroundColor: isGroupActive ? "rgba(150,104,44,0.1)" : "transparent",
-        }}
-      >
-        <div className="flex items-center gap-3">
-          <Icon className="w-4 h-4 shrink-0" />
-          {!collapsed && <span>{group.label}</span>}
-        </div>
-        {!collapsed && (
-          <ChevronDown
-            className={cn("w-3.5 h-3.5 transition-transform duration-200", open && "rotate-180")}
-          />
-        )}
-      </button>
-
-      {open && (
-        <div className="mt-0.5 space-y-0.5">
-          {group.items.map((item) => (
-            <NavLink
-              key={item.path}
-              item={item}
-              isActive={pathname === item.path}
-              onClick={onLinkClick}
-              collapsed={collapsed}
-            />
-          ))}
-        </div>
-      )}
-    </div>
   );
 }
 
@@ -286,7 +228,7 @@ export default function Layout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const closeMobile = () => setMobileOpen(false);
-  const grupos = navForUser(isStaff);
+  const itens = navForUser(isStaff);
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -341,21 +283,20 @@ export default function Layout() {
         )}
 
         {/* Navegação */}
-        <nav className="relative z-10 flex-1 px-3 py-3 space-y-1 overflow-y-auto">
-          {grupos.map((group, index) => (
-            <div key={group.label}>
-              {index > 0 && (
-                <div className="py-1">
-                  <div className="border-t border-white/10" />
-                </div>
-              )}
-              <NavGroupSection
-                group={group}
-                pathname={location.pathname}
-                onLinkClick={closeMobile}
-                collapsed={collapsed}
-              />
-            </div>
+        <nav className="relative z-10 flex-1 space-y-0.5 overflow-y-auto px-3 py-3">
+          {itens.map((item) => (
+            <NavLink
+              key={item.path}
+              item={item}
+              // Rotas filhas de cliente mantêm "Clientes" destacado.
+              isActive={
+                item.path === "/clientes"
+                  ? location.pathname.startsWith("/clientes")
+                  : location.pathname === item.path
+              }
+              onClick={closeMobile}
+              collapsed={collapsed}
+            />
           ))}
         </nav>
 

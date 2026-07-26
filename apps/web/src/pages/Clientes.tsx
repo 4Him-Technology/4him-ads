@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Building2, Loader2, Plus, Search, UserPlus } from "lucide-react";
 import CadastroCliente from "@/components/CadastroCliente";
-import DetalheCliente from "@/components/DetalheCliente";
 import ConviteCliente from "@/components/ConviteCliente";
 import { fetchClients, type Client } from "@/lib/api";
 import { STATUS_ASSINATURA, brl } from "@/lib/format";
@@ -23,9 +23,9 @@ export default function Clientes() {
   const { isAdmin } = useAuth();
   const queryClient = useQueryClient();
 
+  const navigate = useNavigate();
   const [busca, setBusca] = useState("");
   const [modalNovo, setModalNovo] = useState(false);
-  const [detalhe, setDetalhe] = useState<Client | null>(null);
   const [convite, setConvite] = useState<Client | null>(null);
 
   const { data: clientes, isLoading } = useQuery({ queryKey: ["clients"], queryFn: fetchClients });
@@ -111,7 +111,7 @@ export default function Clientes() {
               key={cliente.id}
               cliente={cliente}
               podeConvidar={isAdmin}
-              aoAbrir={() => setDetalhe(cliente)}
+              aoAbrir={() => navigate(`/clientes/${cliente.id}`)}
               aoConvidar={() => setConvite(cliente)}
             />
           ))}
@@ -122,11 +122,6 @@ export default function Clientes() {
         aberto={modalNovo}
         aoFechar={() => setModalNovo(false)}
         aoCriar={recarregar}
-      />
-      <DetalheCliente
-        cliente={detalhe}
-        aoFechar={() => setDetalhe(null)}
-        aoAtualizar={recarregar}
       />
       <ConviteCliente cliente={convite} aoFechar={() => setConvite(null)} />
     </div>
