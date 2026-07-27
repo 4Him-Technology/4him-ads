@@ -550,6 +550,135 @@ export function fetchVariablePreview(subscriptionId: string): Promise<VariablePr
 }
 
 // ============================================================
+// Criativos
+// ============================================================
+
+export type CreativeStatus = "draft" | "review" | "approved" | "rejected" | "archived";
+export type CreativeFormat =
+  | "feed_quadrado"
+  | "feed_vertical"
+  | "story"
+  | "paisagem"
+  | "outro";
+export type CreativeSource = "upload" | "ai" | "external";
+export type ModeloIa = "imagem_rapida" | "imagem_qualidade" | "texto_na_imagem" | "video";
+
+export interface Creative {
+  id: string;
+  client_id: string;
+  name: string;
+  type: string;
+  status: CreativeStatus;
+  source: CreativeSource;
+  format: CreativeFormat;
+  asset_url: string | null;
+  thumbnail_url: string | null;
+  headline: string | null;
+  body: string | null;
+  call_to_action: string | null;
+  destination_url: string | null;
+  tags: string[] | null;
+  width: number | null;
+  height: number | null;
+  mime_type: string | null;
+  version: number;
+  approved_at: string | null;
+  created_at: string;
+  metadata: Record<string, unknown>;
+}
+
+export interface ResumoCriativos {
+  total: number;
+  rascunho: number;
+  revisao: number;
+  aprovados: number;
+  por_ia: number;
+  custo_ia_usd: number;
+}
+
+export interface ModeloDisponivel {
+  chave: ModeloIa;
+  rotulo: string;
+  descricao: string;
+  custoAprox: number;
+}
+
+export function fetchCreatives(clientId?: string): Promise<Creative[]> {
+  return request<Creative[]>(`/creatives${clientId ? `?client_id=${clientId}` : ""}`);
+}
+
+export function fetchCreativesSummary(clientId: string): Promise<ResumoCriativos> {
+  return request<ResumoCriativos>(`/creatives/summary?client_id=${clientId}`);
+}
+
+export function fetchModelosIa(): Promise<{ configurado: boolean; modelos: ModeloDisponivel[] }> {
+  return request<{ configurado: boolean; modelos: ModeloDisponivel[] }>("/creatives/models");
+}
+
+/** Cria o registro e devolve a URL para enviar o arquivo direto ao armazenamento. */
+export function createCreative(dados: {
+  client_id: string;
+  name: string;
+  type?: string;
+  format?: CreativeFormat;
+  headline?: string;
+  body?: string;
+  call_to_action?: string;
+  destination_url?: string;
+  tags?: string[];
+  file_name?: string;
+  mime_type?: string;
+}): Promise<{ criativo: Creative; uploadUrl: string | null }> {
+  return request<{ criativo: Creative; uploadUrl: string | null }>("/creatives", {
+    method: "POST",
+    body: JSON.stringify(dados),
+  });
+}
+
+export function updateCreative(
+  id: string,
+  dados: Partial<{
+    name: string;
+    headline: string | null;
+    body: string | null;
+    call_to_action: string | null;
+    destination_url: string | null;
+    tags: string[];
+    format: CreativeFormat;
+    status: CreativeStatus;
+  }>,
+): Promise<Creative> {
+  return request<Creative>(`/creatives/${id}`, { method: "PATCH", body: JSON.stringify(dados) });
+}
+
+export function deleteCreative(id: string): Promise<{ ok: true }> {
+  return request<{ ok: true }>(`/creatives/${id}`, { method: "DELETE" });
+}
+
+export function generateCreative(dados: {
+  client_id: string;
+  pedido: string;
+  modelo: ModeloIa;
+  formato?: CreativeFormat;
+  name?: string;
+}): Promise<{ criativo: Creative; custoAprox: number }> {
+  return request<{ criativo: Creative; custoAprox: number }>("/creatives/generate", {
+    method: "POST",
+    body: JSON.stringify(dados),
+  });
+}
+
+/** Envia o arquivo direto ao armazenamento, sem passar pela nossa API. */
+export async function uploadArquivo(uploadUrl: string, arquivo: File): Promise<void> {
+  const res = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": arquivo.type || "application/octet-stream" },
+    body: arquivo,
+  });
+  if (!res.ok) throw new ApiError(res.status, "Falha ao enviar o arquivo");
+}
+
+// ============================================================
 // Visão gerencial
 // ============================================================
 

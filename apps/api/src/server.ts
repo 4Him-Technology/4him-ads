@@ -14,6 +14,7 @@ import { authRoutes } from "./routes/auth.js";
 import { clientRoutes } from "./routes/clients.js";
 import { userRoutes } from "./routes/users.js";
 import { billingRoutes } from "./routes/billing.js";
+import { creativeRoutes } from "./routes/creatives.js";
 import { dashboardRoutes } from "./routes/dashboard.js";
 import { webhookRoutes } from "./routes/webhooks.js";
 
@@ -82,6 +83,20 @@ export function buildServer() {
   // --- Limite global (o login tem limite próprio, mais duro) ---
   app.register(rateLimit, { global: true, max: 300, timeWindow: "1 minute" });
 
+  // Muitos clientes HTTP mandam `Content-Type: application/json` em DELETE
+  // sem corpo algum. O comportamento padrão é recusar com 400 — sem
+  // mensagem — o que gera um erro difícil de entender. Aqui, corpo vazio
+  // simplesmente vira `undefined`.
+  app.addContentTypeParser("application/json", { parseAs: "string" }, (_req, corpo, done) => {
+    const texto = typeof corpo === "string" ? corpo.trim() : "";
+    if (texto === "") return done(null, undefined);
+    try {
+      done(null, JSON.parse(texto));
+    } catch {
+      done(new Error("JSON inválido"), undefined);
+    }
+  });
+
   // --- Anti-CSRF em tudo que altera estado ---
   app.addHook("preHandler", requireSameOrigin);
 
@@ -95,6 +110,7 @@ export function buildServer() {
       await api.register(clientRoutes);
       await api.register(userRoutes);
       await api.register(billingRoutes);
+      await api.register(creativeRoutes);
       await api.register(dashboardRoutes);
       await api.register(webhookRoutes);
     },

@@ -17,6 +17,7 @@ import SeletorPeriodo, { PERIODOS, type ChavePeriodo } from "@/components/Seleto
 import ConviteCliente from "@/components/ConviteCliente";
 import PainelCobranca from "@/components/cliente/PainelCobranca";
 import PainelBriefing from "@/components/cliente/PainelBriefing";
+import PainelCriativos from "@/components/cliente/PainelCriativos";
 import {
   fetchClient,
   fetchVisaoCliente,
@@ -165,7 +166,7 @@ export default function ClienteDetalhe() {
       {/* Conteúdo */}
       {aba === "visao" && <AbaVisao visao={visao.data} carregando={visao.isLoading} />}
       {aba === "campanhas" && <AbaCampanhas campanhas={visao.data?.campanhas ?? []} />}
-      {aba === "criativos" && <AbaCriativos total={visao.data?.criativos_total ?? 0} />}
+      {aba === "criativos" && <PainelCriativos clienteId={id} />}
       {aba === "cobranca" && (
         <PainelCobranca
           cliente={c}
@@ -260,19 +261,6 @@ function AbaCampanhas({ campanhas }: { campanhas: CampanhaResumo[] }) {
       </table>
     </div>
   );
-}
-
-function AbaCriativos({ total }: { total: number }) {
-  if (total === 0) {
-    return (
-      <Vazio
-        icone={Images}
-        titulo="Nenhum criativo na biblioteca"
-        texto="Aqui ficará a biblioteca de criativos deste cliente, com o desempenho de cada peça e o histórico de aprovações."
-      />
-    );
-  }
-  return <p className="py-6 text-sm text-muted-foreground">{total} criativo(s).</p>;
 }
 
 function AbaAcessos({ aoConvidar }: { aoConvidar: () => void }) {

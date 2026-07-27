@@ -28,6 +28,9 @@ const schema = z.object({
   /** Chave AES para cifrar tokens de plataforma antes de gravar no banco. */
   ENCRYPTION_KEY: z.string().optional(),
 
+  // --- Geração de criativos por IA (fal.ai — agregador de modelos) ---
+  FAL_KEY: z.string().optional(),
+
   // --- E-mail (Resend). Sem isto, o sistema apenas registra e não envia. ---
   RESEND_API_KEY: z.string().optional(),
   /** Remetente verificado no provedor. Ex.: "4Him Ads <ads@4him.com.br>" */
